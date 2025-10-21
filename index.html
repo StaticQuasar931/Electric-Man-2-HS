@@ -1,74 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Electricman 2</title>
 <style>
-  html, body {
-    height: 100%;
-    margin: 0;
-    background: #000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
+  html, body { height: 100%; margin: 0; background: #000; }
+  body { display: grid; place-items: center; overflow: hidden; font-family: Arial, Helvetica, sans-serif; }
+  ruffle-player, .ruffle-player { width: 100vw; height: 100vh; display: block; }
+  #overlay {
+    position: fixed; inset: 0; display: grid; place-items: center;
+    background: radial-gradient(closest-side, rgba(0,0,0,0.7), rgba(0,0,0,0.95));
+    color: #fff; gap: 16px; text-align: center; padding: 24px;
   }
-  ruffle-player, .ruffle-player {
-    width: 100vw;
-    height: 100vh;
-    display: block;
+  #overlay h1 { margin: 0; font-size: 20px; }
+  #overlay p { margin: 0; opacity: 0.9; }
+  #startBtn {
+    margin-top: 8px; padding: 10px 16px; border: 1px solid #555; border-radius: 8px;
+    background: #111; color: #fff; cursor: pointer; font-weight: 600;
   }
-  #fallback {
-    color: #fff;
-    background: rgba(0,0,0,0.7);
-    border: 1px solid #444;
-    padding: 10px;
-    font-family: sans-serif;
-    font-size: 14px;
-    text-align: center;
+  #startBtn:hover { background: #181818; }
+  #msg { font-size: 13px; color: #cfe8ff; margin-top: 8px; }
+  #errorBox {
+    position: fixed; left: 10px; right: 10px; bottom: 10px;
+    color: #fff; background: rgba(0,0,0,0.6); border: 1px solid #333; padding: 10px;
+    font-size: 13px; display: none;
   }
-  #fallback a {
-    color: #6cf;
-    text-decoration: underline;
-  }
+  #errorBox a { color: #9fd4ff; text-decoration: underline; }
 </style>
 
-<!-- Ruffle from official CDN -->
+<!-- Load Ruffle from CDN -->
 <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 
 <script>
-window.onbeforeunload = () =>
-  "Leaving will close the game and reset progress. Continue?";
+  // Edit this if your SWF lives somewhere else. Case must match exactly.
+  const SWF_FILE = "electricman2_fwg.swf";
 
-document.addEventListener("DOMContentLoaded", () => {
-  const container = document.body;
-  const SWF = "electricman2_fwg.swf";
+  // Leave warning
+  window.onbeforeunload = () => "You are leaving the game. Progress will be lost.";
 
-  try {
-    if (!window.RufflePlayer) throw new Error("RufflePlayer not loaded");
-    const ruffle = window.RufflePlayer.newest();
-    const player = ruffle.createPlayer();
-    player.style.width = "100%";
-    player.style.height = "100%";
-    container.innerHTML = "";
-    container.appendChild(player);
-    player.load(SWF);
-  } catch (e) {
-    const fb = document.createElement("div");
-    fb.id = "fallback";
-    fb.innerHTML = `
-      <p>Could not start Ruffle. You can try opening:</p>
-      <p><a href="electricman2sample.htm" target="_blank">electricman2sample.htm</a>
-         or <a href="electricman2_fwg.swf" target="_blank">electricman2_fwg.swf</a></p>
-      <p><small>Error: ${e}</small></p>
-    `;
-    container.appendChild(fb);
+  async function fileExists(url) {
+    try {
+      const res = await fetch(url, { method: "HEAD", cache: "no-store" });
+      return res.ok;
+    } catch {
+      return false;
+    }
   }
-});
+
+  function showError(html) {
+    const box = document.getElementById("errorBox");
+    box.innerHTML = html;
+    box.style.display = "block";
+  }
+
+  async function startGame() {
+    const overlay = document.getElementById("overlay");
+    const msg = document.getElementById("msg");
+    msg.textContent = "Checking game file...";
+
+    // 1) Verify the SWF is actually reachable to avoid silent 404
+    const swfOk = await fileExists(SWF_FILE);
+    if (!swfOk) {
+      const here = location.pathname;
+      const tip = `
+        <p>Could not load <code>${SWF_FILE}</code> (404). Check:</p>
+        <ul>
+          <li>File is in the same folder as index.html</li>
+          <li>File name and CASE match exactly</li>
+          <li>Repo path is correct. Current path: <code>${here}</code></li>
+        </ul>
+        <p>Open alternatives:
+          <a href="electricman2sample.htm" target="_blank" rel="noopener">electricman2sample.htm</a> or
+          <a href="${SWF_FILE}" target="_blank" rel="noopener">${SWF_FILE}</a>
+        </p>`;
+      showError(tip);
+      msg.textContent = "Game file not found. See error panel.";
+      return;
+    }
+
+    // 2) Ensure Ruffle API is present
+    msg.textContent = "Loading Ruffle...";
+    if (!window.RufflePlayer) {
+      showError("Ruffle not loaded. The CDN may be blocked. Try reloading.");
+      msg.textContent = "Ruffle failed to load.";
+      return;
+    }
+
+    // 3) Create player and resume audio after user click
+    try {
+      const ruffle = window.RufflePlayer.newest();
+      const player = ruffle.createPlayer();
+      player.style.width = "100%";
+      player.style.height = "100%";
+
+      // Some builds expose configure
+      if (player.configure) {
+        player.configure({
+          autoplay: "on",
+          backgroundColor: "#000000",
+          letterbox: "fullscreen",
+          quality: "high",
+          showMenu: true
+        });
+      }
+
+      // Attach to body
+      document.body.appendChild(player);
+
+      // Resume audio due to gesture requirement
+      try {
+        const ctx = player._audio_context || (window.AudioContext ? new AudioContext() : null);
+        if (ctx && ctx.state === "suspended" && ctx.resume) {
+          await ctx.resume();
+        }
+      } catch (_) {}
+
+      // Load SWF
+      msg.textContent = "Starting game...";
+      await player.load(SWF_FILE);
+
+      // Hide overlay when running
+      overlay.style.display = "none";
+    } catch (e) {
+      showError(
+        `Could not start the embedded player. You can try:
+         <a href="electricman2sample.htm" target="_blank" rel="noopener">electricman2sample.htm</a>
+         or <a href="${SWF_FILE}" target="_blank" rel="noopener">${SWF_FILE}</a>
+         <br><small>Error: ${e}</small>`
+      );
+      document.getElementById("msg").textContent = "Failed to start. See error panel.";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // Helpful hints if path looks like GitHub Pages
+    const isGH = location.hostname.endsWith("github.io");
+    if (isGH) {
+      const repo = location.pathname.split("/").filter(Boolean)[0] || "";
+      // If user moved files into a subfolder, remind them
+      if (!repo) {
+        showError("Tip: On GitHub Pages the SWF path is case sensitive. Make sure the SWF sits next to index.html.");
+      }
+    }
+  });
 </script>
 </head>
 <body>
-<div id="fallback">Loading Electricman 2...</div>
+<div id="overlay">
+  <div>
+    <h1>Electricman 2</h1>
+    <p>Click Start to launch with Ruffle. Audio will be enabled.</p>
+    <button id="startBtn" onclick="startGame()">Start Game</button>
+    <div id="msg">Ready</div>
+  </div>
+</div>
+
+<div id="errorBox"></div>
 </body>
 </html>
