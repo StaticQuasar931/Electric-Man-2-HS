@@ -3,27 +3,84 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Electricman 2</title>
+
+<title>Electricman 2 HS Unblocked Game | Play Online Free</title>
+<meta name="description" content="Play Electricman 2 HS unblocked. Stickman fighting tournament of Voltagen. Works on school networks with Ruffle Flash emulator. Fullscreen, fast, and free." />
+<meta name="keywords" content="Electricman 2, Electric Man 2, Electricman 2 HS, Electricman, stickman fighting, Voltagen, online game, unblocked game, unblocked games, play at school, school-safe, working at school, flash game, freeworldgroup, ruffle emulator, static, staticquasar, staticquasar931, static 931, staticq, staticq931, electricman 2 unblocked, electric man 2 unblocked, electricman2 unblocked, electricman game, electricman g@me, unbl0cked, g@mes" />
+
+<link rel="canonical" href="https://staticquasar931.github.io/Electric-Man-2-HS/" />
+<meta name="robots" content="index,follow" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Electricman 2 HS Unblocked Game" />
+<meta property="og:description" content="Play Electricman 2 HS unblocked in your browser. Stickman fighting at the Tournament of Voltagen. Works at school using Ruffle." />
+<meta property="og:url" content="https://staticquasar931.github.io/Electric-Man-2-HS/" />
+<meta property="og:image" content="https://staticquasar931.github.io/Electric-Man-2-HS/electricman2.gif" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Electricman 2 HS Unblocked Game" />
+<meta name="twitter:description" content="Play Electricman 2 HS unblocked in your browser with Ruffle." />
+<meta name="twitter:image" content="https://staticquasar931.github.io/Electric-Man-2-HS/electricman2.gif" />
+
+<link rel="icon" href="https://res.cloudinary.com/dcsrqennd/image/upload/v1758857231/Aeries_Favicon_Real_StaticQuasar931_m1uorx.ico" />
+
 <style>
   html, body { height: 100%; margin: 0; background: #000; }
   body { display: grid; place-items: center; overflow: hidden; font-family: Arial, Helvetica, sans-serif; }
+
+  /* small top-left link to help internal linking without clutter */
+  .top-link {
+    position: fixed; top: 10px; left: 10px; z-index: 20;
+    background: rgba(0,0,0,0.6); color: #fff; padding: 6px 10px; border: 1px solid #333; border-radius: 8px;
+    text-decoration: none; font-size: 13px;
+    animation: twinkle 3s infinite;
+  }
+  .top-link:hover { background: rgba(0,0,0,0.75); }
+  @keyframes twinkle { 0%{box-shadow:0 0 0px #8fd1ff;} 50%{box-shadow:0 0 10px #8fd1ff;} 100%{box-shadow:0 0 0px #8fd1ff;} }
+
   ruffle-player { width: 100vw; height: 100vh; display: block; }
   #fallback {
     position: fixed; left: 10px; right: 10px; bottom: 10px;
     color: #fff; background: rgba(0,0,0,0.7); border: 1px solid #333;
-    padding: 10px; font-size: 13px; display: none;
+    padding: 10px; font-size: 13px; display: none; z-index: 15;
   }
   #fallback a { color: #9fd4ff; text-decoration: underline; }
+
+  /* hidden SEO block */
+  .seo-hidden {
+    position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;
+  }
 </style>
+
+<!-- Structured data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "Electricman 2 HS",
+  "alternateName": ["Electric Man 2", "Electricman 2"],
+  "url": "https://staticquasar931.github.io/Electric-Man-2-HS/",
+  "image": "https://staticquasar931.github.io/Electric-Man-2-HS/electricman2.gif",
+  "applicationCategory": "Game",
+  "operatingSystem": "Browser",
+  "genre": ["Action", "Fighting"],
+  "description": "Play Electricman 2 HS unblocked online. Enter the Tournament of Voltagen and defeat rival stickman teams using martial arts and special powers. Runs with the Ruffle Flash emulator so it works at school.",
+  "author": {"@type":"Organization","name":"FreeWorldGroup"},
+  "publisher": {"@type":"Organization","name":"FreeWorldGroup"}
+}
+</script>
 
 <!-- Ruffle from CDN -->
 <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 
 <script>
-  // Your current filenames from the screenshot
+  // Match your current filenames
   const SWF_FILE = "electricman2hs_fwg.swf";
   const SAMPLE_HTML = "electricman2hssample.htm";
 
+  // Leave warning
   window.onbeforeunload = () => "You are leaving the game. Progress will be lost.";
 
   async function exists(url) {
@@ -34,17 +91,16 @@
   async function boot() {
     const fb = document.getElementById("fallback");
 
-    // Make sure the SWF is reachable first to avoid silent 404
     if (!(await exists(SWF_FILE))) {
       fb.style.display = "block";
-      fb.innerHTML = `Could not find <code>${SWF_FILE}</code>. Since nothing is in a folder, place it next to index.html or update SWF_FILE.
-        <br>Try: <a href="${SAMPLE_HTML}" target="_blank" rel="noopener">${SAMPLE_HTML}</a>`;
+      fb.innerHTML = `Could not find <code>${SWF_FILE}</code>. Try
+        <a href="${SAMPLE_HTML}" target="_blank" rel="noopener">${SAMPLE_HTML}</a>.`;
       return;
     }
 
     if (!window.RufflePlayer) {
       fb.style.display = "block";
-      fb.textContent = "Ruffle did not load. Reload the page or try again later.";
+      fb.textContent = "Ruffle did not load. Reload the page and try again.";
       return;
     }
 
@@ -74,6 +130,19 @@
 </script>
 </head>
 <body>
+<a class="top-link" href="https://sites.google.com/view/staticquasar931/gm3z" target="_blank" rel="noopener">More Unblocked Games by Static</a>
+
 <div id="fallback">Loading…</div>
+
+<!-- Hidden SEO content block -->
+<div class="seo-hidden">
+  <h2>Play Electricman 2 HS Unblocked</h2>
+  <p>Welcome to Electricman 2 HS, a classic stickman fighting game where you battle through the Tournament of Voltagen to prove who is the most powerful. This page lets you play the game online directly in your browser using the Ruffle Flash emulator so it works at school, at work, and anywhere that blocks the old Flash plugin. If you are searching for Electricman 2 unblocked or Electric Man 2 unblocked, you are in the right place. The game loads full screen and saves nothing server side. Use the in game tutorial to learn the controls and chain together punches, kicks, and slow motion power moves to defeat enemy teams.</p>
+  <p>StaticQuasar931 hosts school safe pages for classic games with clean SEO and fast loading. If the game does not start, try the included sample page or reload the site. For more school friendly games, visit StaticQuasar931 on Google Sites. Keywords for discoverability include electricman 2 game, electricman 2 g@me, electric man 2 at school, unblocked electricman, stickman fighting unblocked, working at school, and classic flash g@mes. Brand variants used across the site include static, staticquasar, staticquasar931, static 931, staticq, and staticq931. This page is the canonical version for the GitHub Pages host at https://staticquasar931.github.io/Electric-Man-2-HS/ and links back to the main game list so visitors can explore additional unblocked titles.</p>
+  <ul>
+    <li><a href="https://sites.google.com/view/staticquasar931" target="_blank" rel="noopener">StaticQuasar931 site</a></li>
+    <li><a href="https://sites.google.com/view/staticquasar931/gm3z" target="_blank" rel="noopener">Unblocked games list</a></li>
+  </ul>
+</div>
 </body>
 </html>
