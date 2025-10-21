@@ -8,13 +8,22 @@
   html, body { height: 100%; margin: 0; background: #000; }
   body { display: grid; place-items: center; overflow: hidden; font-family: Arial, Helvetica, sans-serif; }
   ruffle-player { width: 100vw; height: 100vh; display: block; }
-  #fallback { position: fixed; left: 10px; right: 10px; bottom: 10px; color: #fff;
-    background: rgba(0,0,0,0.6); border: 1px solid #333; padding: 10px; font-size: 13px; display: none; }
+  #fallback {
+    position: fixed; left: 10px; right: 10px; bottom: 10px;
+    color: #fff; background: rgba(0,0,0,0.7); border: 1px solid #333;
+    padding: 10px; font-size: 13px; display: none;
+  }
   #fallback a { color: #9fd4ff; text-decoration: underline; }
 </style>
+
+<!-- Ruffle from CDN -->
 <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
+
 <script>
-  const SWF_FILE = "electricman2_fwg.swf";
+  // Your current filenames from the screenshot
+  const SWF_FILE = "electricman2hs_fwg.swf";
+  const SAMPLE_HTML = "electricman2hssample.htm";
+
   window.onbeforeunload = () => "You are leaving the game. Progress will be lost.";
 
   async function exists(url) {
@@ -25,38 +34,42 @@
   async function boot() {
     const fb = document.getElementById("fallback");
 
+    // Make sure the SWF is reachable first to avoid silent 404
     if (!(await exists(SWF_FILE))) {
       fb.style.display = "block";
-      fb.innerHTML = `Could not find <code>${SWF_FILE}</code>. Try
-        <a href="electricman2sample.htm" target="_blank" rel="noopener">electricman2sample.htm</a>
-        or <a href="${SWF_FILE}" target="_blank" rel="noopener">${SWF_FILE}</a>.`;
+      fb.innerHTML = `Could not find <code>${SWF_FILE}</code>. Since nothing is in a folder, place it next to index.html or update SWF_FILE.
+        <br>Try: <a href="${SAMPLE_HTML}" target="_blank" rel="noopener">${SAMPLE_HTML}</a>`;
       return;
     }
+
     if (!window.RufflePlayer) {
       fb.style.display = "block";
       fb.textContent = "Ruffle did not load. Reload the page or try again later.";
       return;
     }
 
-    const player = window.RufflePlayer.newest().createPlayer();
-    if (player.configure) {
-      player.configure({
-        autoplay: "on",
-        backgroundColor: "#000000",
-        letterbox: "fullscreen",
-        quality: "high",
-        showMenu: true
-      });
-    }
-    document.body.appendChild(player);
-    try { await player.load(SWF_FILE); }
-    catch (e) {
+    try {
+      const player = window.RufflePlayer.newest().createPlayer();
+      if (player.configure) {
+        player.configure({
+          autoplay: "on",
+          backgroundColor: "#000000",
+          letterbox: "fullscreen",
+          quality: "high",
+          showMenu: true
+        });
+      }
+      document.body.appendChild(player);
+      await player.load(SWF_FILE);
+    } catch (e) {
       fb.style.display = "block";
-      fb.innerHTML = `Could not start the player. Try
-        <a href="electricman2sample.htm" target="_blank" rel="noopener">electricman2sample.htm</a>
-        or <a href="${SWF_FILE}" target="_blank" rel="noopener">${SWF_FILE}</a><br><small>${e}</small>`;
+      fb.innerHTML = `Could not start the player. You can try
+        <a href="${SAMPLE_HTML}" target="_blank" rel="noopener">${SAMPLE_HTML}</a>
+        or <a href="${SWF_FILE}" target="_blank" rel="noopener">${SWF_FILE}</a>
+        <br><small>${e}</small>`;
     }
   }
+
   document.addEventListener("DOMContentLoaded", boot);
 </script>
 </head>
