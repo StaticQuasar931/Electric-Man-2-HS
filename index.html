@@ -4,107 +4,148 @@
   <head>
     <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Electricman 2 bundle index</title>
+    <title>Electricman 2</title>
     <style type="text/css">
-      body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #0e0f13; color: #e9eef5; }
-      header { padding: 16px; background: #151821; border-bottom: 1px solid #2a3140; }
-      h1 { margin: 0; font-size: 18px; }
-      .wrap { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100vh - 64px); }
-      nav { border-right: 1px solid #2a3140; padding: 12px; background: #11141b; overflow: auto; }
-      h2 { font-size: 14px; margin: 0 0 8px; color: #9fb3c8; }
-      ul { list-style: none; margin: 0; padding: 0; }
-      li { margin: 6px 0; }
-      a { color: #8fd1ff; text-decoration: none; }
-      a:hover { text-decoration: underline; }
-      .thumbs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 10px; }
-      .thumbs img { width: 100%; border: 1px solid #2a3140; }
-      main { display: flex; flex-direction: column; }
-      .viewer-head { padding: 10px 12px; background: #151821; border-bottom: 1px solid #2a3140; display: flex; align-items: center; gap: 8px; }
-      .viewer-head code { background: #0b0d12; padding: 2px 6px; border: 1px solid #2a3140; border-radius: 4px; color: #b7c7d9; }
-      .viewer { flex: 1; }
-      iframe, object { width: 100%; height: 100%; border: 0; display: block; background: #000; }
-      .hint { font-size: 12px; color: #a9b6c6; margin-left: auto; }
-      .btn { padding: 6px 10px; border: 1px solid #2a3140; border-radius: 6px; background: #0f1218; color: #e9eef5; cursor: pointer; }
-      .btn:hover { background: #171b24; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        background: #000;
+        color: #fff;
+        font-family: Arial, Helvetica, sans-serif;
+        overflow: hidden;
+      }
+      #stage {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: #000;
+      }
+      ruffle-player, .ruffle-player {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+      }
+      #fallback {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        margin: 0;
+        padding: 8px 10px;
+        background: rgba(0,0,0,0.7);
+        border: 1px solid #333;
+        font-size: 14px;
+        line-height: 1.4;
+        display: none;
+      }
+      #fallback a { color: #9fd4ff; text-decoration: underline; }
     </style>
+
+    <!-- Prefer self-hosted Ruffle build at /ruffle/ruffle.js.
+         Keep the CDN as a backup so it "just works". -->
+    <script type="text/javascript" src="ruffle/ruffle.js"></script>
     <script type="text/javascript">
-      window.onbeforeunload = function() {
-        return "Changes or playback may be lost. Leave this page?";
+      (function ensureRuffle() {
+        if (!window.RufflePlayer) {
+          var s = document.createElement("script");
+          s.src = "https://unpkg.com/@ruffle-rs/ruffle";
+          s.async = true;
+          document.head.appendChild(s);
+        }
+      })();
+    </script>
+
+    <script type="text/javascript">
+      // Leave or reload warning
+      window.onbeforeunload = function () {
+        return "You are about to leave the game. Unsaved progress will be lost.";
       };
 
-      function setViewer(src, title, type) {
-        const container = document.getElementById("viewer-container");
-        const label = document.getElementById("viewer-label");
-        container.innerHTML = "";
-        label.textContent = title + " (" + type + ")";
-        if (type === "swf") {
-          const obj = document.createElement("object");
-          obj.setAttribute("data", src);
-          obj.setAttribute("type", "application/x-shockwave-flash");
-          obj.innerHTML = "<p style='padding:10px;color:#cfd8e3;'>Flash file — use Ruffle or another Flash emulator if it doesn’t run automatically.</p>";
-          container.appendChild(obj);
-        } else {
-          const iframe = document.createElement("iframe");
-          iframe.src = src;
-          iframe.title = title;
-          container.appendChild(iframe);
-        }
-      }
+      // Boot Ruffle and load the SWF full screen
+      (function () {
+        var SWF_PATH = "electricman2_fwg.swf";
 
-      document.addEventListener("DOMContentLoaded", function() {
-        const links = document.querySelectorAll("[data-view]");
-        links.forEach(link => {
-          link.addEventListener("click", function(e) {
-            e.preventDefault();
-            setViewer(this.getAttribute("href"), this.getAttribute("data-title"), this.getAttribute("data-view"));
-          });
+        function mountRuffle() {
+          try {
+            var ruffle = window.RufflePlayer || window.Ruffle;
+            if (!ruffle) return false;
+
+            var playerFactory = ruffle.newest || ruffle.Player || ruffle.createPlayer;
+            var player = playerFactory ? playerFactory() : document.createElement("ruffle-player");
+
+            // Player configuration
+            if (player && player.configure) {
+              player.configure({
+                autoplay: "on",
+                unmuteOverlay: "visible",
+                backgroundColor: "#000000",
+                letterbox: "fullscreen",
+                // You can tweak quality if needed: "high" | "medium" | "low"
+                quality: "high",
+                // Allow right click menu
+                showMenu: true
+              });
+            }
+
+            var stage = document.getElementById("stage");
+            stage.innerHTML = "";
+            stage.appendChild(player);
+
+            // Load the game
+            if (player && player.load) {
+              player.load(SWF_PATH).catch(function (e) {
+                showFallback(e);
+              });
+            } else {
+              // Older builds expose load_swf
+              if (player && player.load_swf) {
+                player.load_swf(SWF_PATH);
+              } else {
+                showFallback("Ruffle player could not be created.");
+              }
+            }
+            return true;
+          } catch (err) {
+            showFallback(err);
+            return true;
+          }
+        }
+
+        function showFallback(err) {
+          var fb = document.getElementById("fallback");
+          fb.style.display = "block";
+          fb.innerHTML =
+            "Could not start the embedded player. " +
+            "You can try opening the sample HTML or the SWF directly: " +
+            '<a href="electricman2sample.htm" target="_blank" rel="noopener">electricman2sample.htm</a> ' +
+            "or " +
+            '<a href="electricman2_fwg.swf" target="_blank" rel="noopener">electricman2_fwg.swf</a>.' +
+            (err ? " Error: " + String(err) : "");
+        }
+
+        // Try immediately. If Ruffle is not ready yet, try again shortly.
+        document.addEventListener("DOMContentLoaded", function () {
+          var tries = 0;
+          var maxTries = 20;
+
+          function tryMount() {
+            if (mountRuffle()) return;
+            tries += 1;
+            if (tries < maxTries) {
+              setTimeout(tryMount, 200);
+            } else {
+              showFallback("Ruffle did not load.");
+            }
+          }
+          tryMount();
         });
-        setViewer("electricman2sample.htm", "electricman2sample.htm", "html");
-      });
+      })();
     </script>
   </head>
   <body>
-    <header><h1>Electricman 2 Files</h1></header>
-
-    <div class="wrap">
-      <nav>
-        <h2>Main files</h2>
-        <ul>
-          <li><a href="electricman2sample.htm" data-view="html" data-title="electricman2sample.htm">electricman2sample.htm</a></li>
-          <li><a href="electricman2_fwg.swf" data-view="swf" data-title="electricman2_fwg.swf">electricman2_fwg.swf</a></li>
-        </ul>
-
-        <h2>GIFs</h2>
-        <div class="thumbs">
-          <img src="electricman2small.gif" alt="small" />
-          <img src="electricman2med.gif" alt="medium" />
-        </div>
-        <ul>
-          <li><a href="electricman2.gif" data-view="html" data-title="electricman2.gif">electricman2.gif</a></li>
-          <li><a href="electricman2med.gif" data-view="html" data-title="electricman2med.gif">electricman2med.gif</a></li>
-          <li><a href="electricman2small.gif" data-view="html" data-title="electricman2small.gif">electricman2small.gif</a></li>
-        </ul>
-
-        <h2>Text</h2>
-        <ul>
-          <li><a href="license.txt" target="_blank">license.txt</a></li>
-          <li><a href="readme.txt" target="_blank">readme.txt</a></li>
-        </ul>
-      </nav>
-
-      <main>
-        <div class="viewer-head">
-          <span class="btn" onclick="setViewer('electricman2sample.htm','electricman2sample.htm','html')">Open sample</span>
-          <span class="btn" onclick="setViewer('electricman2_fwg.swf','electricman2_fwg.swf','swf')">Open SWF</span>
-          <span class="hint">Click any link to preview</span>
-        </div>
-        <div class="viewer" id="viewer">
-          <div id="viewer-container" style="width:100%;height:100%;"></div>
-        </div>
-        <div class="viewer-head">
-          <span>Now viewing:</span> <code id="viewer-label">electricman2sample.htm (html)</code>
-        </div>
-      </main>
+    <div id="stage">
+      <p id="fallback">Loading...</p>
     </div>
   </body>
 </html>
