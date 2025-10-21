@@ -1,151 +1,74 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
-  <head>
-    <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Electricman 2</title>
-    <style type="text/css">
-      html, body { height: 100%; }
-      body {
-        margin: 0;
-        background: #000;
-        color: #fff;
-        font-family: Arial, Helvetica, sans-serif;
-        overflow: hidden;
-      }
-      #stage {
-        position: fixed;
-        inset: 0;
-        display: grid;
-        place-items: center;
-        background: #000;
-      }
-      ruffle-player, .ruffle-player {
-        width: 100vw;
-        height: 100vh;
-        display: block;
-      }
-      #fallback {
-        position: absolute;
-        bottom: 10px;
-        left: 10px;
-        right: 10px;
-        margin: 0;
-        padding: 8px 10px;
-        background: rgba(0,0,0,0.7);
-        border: 1px solid #333;
-        font-size: 14px;
-        line-height: 1.4;
-        display: none;
-      }
-      #fallback a { color: #9fd4ff; text-decoration: underline; }
-    </style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Electricman 2</title>
+<style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+  ruffle-player, .ruffle-player {
+    width: 100vw;
+    height: 100vh;
+    display: block;
+  }
+  #fallback {
+    color: #fff;
+    background: rgba(0,0,0,0.7);
+    border: 1px solid #444;
+    padding: 10px;
+    font-family: sans-serif;
+    font-size: 14px;
+    text-align: center;
+  }
+  #fallback a {
+    color: #6cf;
+    text-decoration: underline;
+  }
+</style>
 
-    <!-- Prefer self-hosted Ruffle build at /ruffle/ruffle.js.
-         Keep the CDN as a backup so it "just works". -->
-    <script type="text/javascript" src="ruffle/ruffle.js"></script>
-    <script type="text/javascript">
-      (function ensureRuffle() {
-        if (!window.RufflePlayer) {
-          var s = document.createElement("script");
-          s.src = "https://unpkg.com/@ruffle-rs/ruffle";
-          s.async = true;
-          document.head.appendChild(s);
-        }
-      })();
-    </script>
+<!-- Ruffle from official CDN -->
+<script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 
-    <script type="text/javascript">
-      // Leave or reload warning
-      window.onbeforeunload = function () {
-        return "You are about to leave the game. Unsaved progress will be lost.";
-      };
+<script>
+window.onbeforeunload = () =>
+  "Leaving will close the game and reset progress. Continue?";
 
-      // Boot Ruffle and load the SWF full screen
-      (function () {
-        var SWF_PATH = "electricman2_fwg.swf";
+document.addEventListener("DOMContentLoaded", () => {
+  const container = document.body;
+  const SWF = "electricman2_fwg.swf";
 
-        function mountRuffle() {
-          try {
-            var ruffle = window.RufflePlayer || window.Ruffle;
-            if (!ruffle) return false;
-
-            var playerFactory = ruffle.newest || ruffle.Player || ruffle.createPlayer;
-            var player = playerFactory ? playerFactory() : document.createElement("ruffle-player");
-
-            // Player configuration
-            if (player && player.configure) {
-              player.configure({
-                autoplay: "on",
-                unmuteOverlay: "visible",
-                backgroundColor: "#000000",
-                letterbox: "fullscreen",
-                // You can tweak quality if needed: "high" | "medium" | "low"
-                quality: "high",
-                // Allow right click menu
-                showMenu: true
-              });
-            }
-
-            var stage = document.getElementById("stage");
-            stage.innerHTML = "";
-            stage.appendChild(player);
-
-            // Load the game
-            if (player && player.load) {
-              player.load(SWF_PATH).catch(function (e) {
-                showFallback(e);
-              });
-            } else {
-              // Older builds expose load_swf
-              if (player && player.load_swf) {
-                player.load_swf(SWF_PATH);
-              } else {
-                showFallback("Ruffle player could not be created.");
-              }
-            }
-            return true;
-          } catch (err) {
-            showFallback(err);
-            return true;
-          }
-        }
-
-        function showFallback(err) {
-          var fb = document.getElementById("fallback");
-          fb.style.display = "block";
-          fb.innerHTML =
-            "Could not start the embedded player. " +
-            "You can try opening the sample HTML or the SWF directly: " +
-            '<a href="electricman2sample.htm" target="_blank" rel="noopener">electricman2sample.htm</a> ' +
-            "or " +
-            '<a href="electricman2_fwg.swf" target="_blank" rel="noopener">electricman2_fwg.swf</a>.' +
-            (err ? " Error: " + String(err) : "");
-        }
-
-        // Try immediately. If Ruffle is not ready yet, try again shortly.
-        document.addEventListener("DOMContentLoaded", function () {
-          var tries = 0;
-          var maxTries = 20;
-
-          function tryMount() {
-            if (mountRuffle()) return;
-            tries += 1;
-            if (tries < maxTries) {
-              setTimeout(tryMount, 200);
-            } else {
-              showFallback("Ruffle did not load.");
-            }
-          }
-          tryMount();
-        });
-      })();
-    </script>
-  </head>
-  <body>
-    <div id="stage">
-      <p id="fallback">Loading...</p>
-    </div>
-  </body>
+  try {
+    if (!window.RufflePlayer) throw new Error("RufflePlayer not loaded");
+    const ruffle = window.RufflePlayer.newest();
+    const player = ruffle.createPlayer();
+    player.style.width = "100%";
+    player.style.height = "100%";
+    container.innerHTML = "";
+    container.appendChild(player);
+    player.load(SWF);
+  } catch (e) {
+    const fb = document.createElement("div");
+    fb.id = "fallback";
+    fb.innerHTML = `
+      <p>Could not start Ruffle. You can try opening:</p>
+      <p><a href="electricman2sample.htm" target="_blank">electricman2sample.htm</a>
+         or <a href="electricman2_fwg.swf" target="_blank">electricman2_fwg.swf</a></p>
+      <p><small>Error: ${e}</small></p>
+    `;
+    container.appendChild(fb);
+  }
+});
+</script>
+</head>
+<body>
+<div id="fallback">Loading Electricman 2...</div>
+</body>
 </html>
